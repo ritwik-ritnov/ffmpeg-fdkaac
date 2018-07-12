@@ -1,5 +1,8 @@
 #!/bin/sh
 
+BUILD_DIR=$1
+CACHE_DIR=$2
+
 echo "-----> Starting buildpack"
 
 sudo apt-get update
@@ -7,7 +10,7 @@ sudo apt-get -y install autoconf automake build-essential git-core libass-dev li
 
 echo "-----> Creating sources dir"
 
-mkdir $CACHE_DIR/ffmpeg_sources
+mkdir -p $CACHE_DIR/ffmpeg_sources
 cd $CACHE_DIR/ffmpeg_sources
 
 echo "-----> Getting fdk-aac encoder"
