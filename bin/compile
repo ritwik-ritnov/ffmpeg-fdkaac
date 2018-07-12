@@ -5,23 +5,17 @@ indent() {
   sed 's/^/       /'
 }
 
-PROFILE_PATH="$1/.profile.d/ffmpeg.sh"
+echo "-----> Starting buildpack"
 
+PROFILE_PATH="$1/.profile.d/ffmpeg.sh"
 echo "exporting PATH and LIBRARY_PATH" | indent
 mkdir -p $(dirname $PROFILE_PATH)
-
 echo 'export PATH="$PATH:$HOME/vendor/bin"' >> $PROFILE_PATH
 echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/vendor/lib"' >> $PROFILE_PATH
-
+export PATH="$BUILD_DIR/bin:"$PATH
 mkdir -p "$1/vendor"
 export BUILD_DIR=$1"/vendor"
 export CACHE_DIR=$2
-
-
-echo "-----> Starting buildpack"
-
-apt-get update
-apt-get -y install autoconf automake build-essential git-core libass-dev libgpac-dev libsdl1.2-dev libtheora-dev libtool libvdpau-dev libvorbis-dev libx11-dev libxext-dev libxfixes-dev pkg-config texi2html zlib1g-dev libmp3lame-dev nasm gcc yasm libx264-dev && true
 
 echo "-----> Creating sources dir"
 
