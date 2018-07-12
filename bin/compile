@@ -77,7 +77,7 @@ git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 echo "-----> Installing ffmpeg"
 
 cd ffmpeg
-PKG_CONFIG_PATH="$BUILD_DIR/ffmpeg_build/lib/pkgconfig"
+PKG_CONFIG_PATH="$BUILD_DIR/vendor/lib/pkgconfig"
 export PKG_CONFIG_PATH
 
 echo "-----> Configure ffmpeg"
