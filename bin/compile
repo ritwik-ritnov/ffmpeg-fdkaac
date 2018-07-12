@@ -1,5 +1,18 @@
 #!/bin/sh
 
+
+indent() {
+  sed 's/^/       /'
+}
+
+PROFILE_PATH="$1/.profile.d/ffmpeg.sh"
+
+echo "exporting PATH and LIBRARY_PATH" | indent
+mkdir -p $(dirname $PROFILE_PATH)
+
+echo 'export PATH="$PATH:$HOME/vendor/bin"' >> $PROFILE_PATH
+echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/vendor/lib"' >> $PROFILE_PATH
+
 mkdir -p "$1/vendor"
 export BUILD_DIR=$1"/vendor"
 export CACHE_DIR=$2
