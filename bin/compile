@@ -17,6 +17,11 @@ export BUILD_DIR=$1"/vendor"
 export PATH="$BUILD_DIR/bin:$PATH"
 export CACHE_DIR=$2
 
+echo "-----> Creating sources dir"
+
+mkdir -p $BUILD_DIR/ffmpeg_sources
+cd $BUILD_DIR/ffmpeg_sources
+
 echo "-----> Getting fdk-aac encoder"
 
 git clone --depth 1 git://github.com/mstorsjo/fdk-aac.git
