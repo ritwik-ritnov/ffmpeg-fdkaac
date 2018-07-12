@@ -1,0 +1,59 @@
+#!/bin/sh
+
+echo "-----> Starting buildpack"
+
+sudo apt-get update
+sudo apt-get -y install autoconf automake build-essential git-core libass-dev libgpac-dev libsdl1.2-dev libtheora-dev libtool libvdpau-dev libvorbis-dev libx11-dev libxext-dev libxfixes-dev pkg-config texi2html zlib1g-dev libmp3lame-dev nasm gcc yasm libx264-dev && true
+
+echo "-----> Creating sources dir"
+
+mkdir $CACHE_DIR/ffmpeg_sources
+cd $CACHE_DIR/ffmpeg_sources
+
+echo "-----> Getting fdk-aac encoder"
+
+git clone --depth 1 git://github.com/mstorsjo/fdk-aac.git
+
+echo "-----> Installing fdk-aac encoder"
+
+cd fdk-aac
+autoreconf -fiv
+./configure --prefix="$CACHE_DIR/ffmpeg_build" --disable-shared
+make
+make install
+make distclean
+
+echo "-----> Getting lame"
+
+cd $CACHE_DIR/ffmpeg_sources
+wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
+tar xzvf lame-3.99.5.tar.gz
+
+echo "-----> Installing lame"
+
+cd lame-3.99.5
+./configure --prefix="$CACHE_DIR/ffmpeg_build" --enable-nasm --disable-shared
+make
+make install
+make distclean
+
+echo "-----> Getting ffmpeg"
+
+cd $CACHE_DIR/ffmpeg_sources
+git clone --depth 1 git://source.ffmpeg.org/ffmpeg
+
+echo "-----> Installing ffmpeg"
+
+cd ffmpeg
+PKG_CONFIG_PATH="$CACHE_DIR/ffmpeg_build/lib/pkgconfig"
+export PKG_CONFIG_PATH
+./configure --prefix="$CACHE_DIR/ffmpeg_build" \
+  --extra-cflags="-I$CACHE_DIR/ffmpeg_build/include" --extra-ldflags="-L$CACHE_DIR/ffmpeg_build/lib" \
+  --bindir="$CACHE_DIR/bin" --extra-libs="-ldl" --enable-gpl --enable-libass --enable-libfdk-aac --enable-libx264 \
+  --enable-libmp3lame --enable-nonfree
+make
+make install
+sudo cp ffmpeg /usr/bin/
+make distclean
+hash -r
+ffmpeg 2>&1 | head -n1
