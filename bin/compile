@@ -40,6 +40,17 @@ make
 make install
 make distclean
 
+echo "-----> Getting newest yasm"
+
+cd $CACHE_DIR
+wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
+tar -xvf yasm-1.3.0.tar.gz
+
+echo "-----> Configure Yasm"
+
+cd yasm-1.3.0
+./configure
+
 echo "-----> Getting ffmpeg"
 
 cd $CACHE_DIR/ffmpeg_sources
@@ -50,12 +61,18 @@ echo "-----> Installing ffmpeg"
 cd ffmpeg
 PKG_CONFIG_PATH="$CACHE_DIR/ffmpeg_build/lib/pkgconfig"
 export PKG_CONFIG_PATH
+
+echo "-----> Configure ffmpeg"
+
 ./configure --prefix="$CACHE_DIR/ffmpeg_build" \
   --extra-cflags="-I$CACHE_DIR/ffmpeg_build/include" --extra-ldflags="-L$CACHE_DIR/ffmpeg_build/lib" \
   --bindir="$CACHE_DIR/bin" --extra-libs="-ldl" --enable-gpl --enable-libass --enable-libfdk-aac --enable-libx264 \
   --enable-libmp3lame --enable-nonfree
 make
 make install
+
+echo "-----> Copy binary"
+
 sudo cp ffmpeg /usr/bin/
 make distclean
 hash -r
