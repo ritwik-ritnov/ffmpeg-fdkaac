@@ -7,14 +7,14 @@ indent() {
 
 echo "-----> Starting buildpack"
 
+mkdir -p "$1/vendor"
 PROFILE_PATH="$1/.profile.d/ffmpeg.sh"
 echo "exporting PATH and LIBRARY_PATH" | indent
 mkdir -p $(dirname $PROFILE_PATH)
 echo 'export PATH="$PATH:$HOME/vendor/bin"' >> $PROFILE_PATH
 echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/vendor/lib"' >> $PROFILE_PATH
-export PATH="$BUILD_DIR/bin:"$PATH
-mkdir -p "$1/vendor"
 export BUILD_DIR=$1"/vendor"
+export PATH="$BUILD_DIR/bin:"$PATH
 export CACHE_DIR=$2
 
 echo "-----> Creating sources dir"
@@ -71,7 +71,7 @@ git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 echo "-----> Installing ffmpeg"
 
 cd ffmpeg
-PKG_CONFIG_PATH="$BUILD_DIR/vendor/lib/pkgconfig"
+PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$BUILD_DIR/vendor/lib/pkgconfig"
 export PKG_CONFIG_PATH
 
 echo "-----> Configure ffmpeg"
