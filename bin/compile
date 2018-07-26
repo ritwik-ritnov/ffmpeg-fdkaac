@@ -13,14 +13,15 @@ echo "exporting PATH and LIBRARY_PATH" | indent
 mkdir -p $(dirname $PROFILE_PATH)
 echo 'export PATH="$PATH:$HOME/vendor/bin"' >> $PROFILE_PATH
 echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/vendor/lib"' >> $PROFILE_PATH
-export BUILD_DIR=$1"/vendor"
-export PATH="$BUILD_DIR/bin:$PATH"
+export VENDOR_DIR=$1"/vendor"
+export PATH="$VENDOR_DIR/bin:$PATH"
 export CACHE_DIR=$2
 
 echo "-----> Creating sources dir"
 
-mkdir -p $BUILD_DIR/ffmpeg_sources
-cd $BUILD_DIR/ffmpeg_sources
+mkdir -p $VENDOR_DIR/ffmpeg_sources
+mkdir -p $VENDOR_DIR/ffmpeg_build
+cd $VENDOR_DIR/ffmpeg_sources
 
 echo "-----> Getting fdk-aac encoder"
 
@@ -30,63 +31,63 @@ echo "-----> Installing fdk-aac encoder"
 
 cd fdk-aac
 autoreconf -fiv
-./configure --prefix="$BUILD_DIR" --disable-shared
+./configure --prefix="$VENDOR_DIR/ffmpeg_build" --disable-shared
 make
 make install
 make distclean
 
 # echo "-----> Getting newest yasm"
 
-# cd $BUILD_DIR
+# cd $VENDOR_DIR
 # wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
 # tar -xvf yasm-1.3.0.tar.gz
 
 # echo "-----> Configure Yasm"
 
 # cd yasm-1.3.0
-# ./configure --prefix="$BUILD_DIR" --disable-debug >/dev/null 2>&1
+# ./configure --prefix="$VENDOR_DIR" --disable-debug >/dev/null 2>&1
 # make
 # make install >/dev/null 2>&1
 # make distclean > /dev/null 2>&1
 
 echo "-----> Getting lame"
 
-cd $BUILD_DIR/ffmpeg_sources
+cd $VENDOR_DIR/ffmpeg_sources
 wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
 tar xzvf lame-3.99.5.tar.gz
 
 echo "-----> Installing lame"
 
 cd lame-3.99.5
-./configure --prefix="$BUILD_DIR" --enable-nasm --disable-shared
+./configure --prefix="$VENDOR_DIR/ffmpeg_build" --enable-nasm --disable-shared
 make
 make install
 make distclean
 
 echo "-----> Getting ffmpeg"
 
-cd $BUILD_DIR/ffmpeg_sources
+cd $VENDOR_DIR/ffmpeg_sources
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 
 echo "-----> Installing ffmpeg"
 
 cd ffmpeg
-PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$BUILD_DIR/lib/pkgconfig"
+PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$VENDOR_DIR/ffmpeg_build/lib/pkgconfig"
 export PKG_CONFIG_PATH
 
 echo "-----> Configure ffmpeg"
 
-./configure --prefix="$BUILD_DIR" \
-  --extra-cflags="-I$BUILD_DIR/include" --extra-ldflags="-L$BUILD_DIR/lib" \
-  --prefix="$BUILD_DIR" --extra-libs="-ldl" --enable-gpl --enable-libass --enable-libfdk-aac --enable-libx264 \
+./configure --prefix="$VENDOR_DIR/ffmpeg_build" \
+  --extra-cflags="-I$VENDOR_DIR/ffmpeg_build/include" --extra-ldflags="-L$VENDOR_DIR/ffmpeg_build/lib" \
+  --bindir="$VENDOR_DIR/bin" --extra-libs="-ldl" --enable-gpl --enable-libass --enable-libfdk-aac --enable-libx264 \
   --enable-libmp3lame --enable-nonfree
 make
 make install
 
 echo "-----> Copy binary"
 
-mkdir -p $BUILD_DIR/bin/
-cp ffmpeg $BUILD_DIR/bin/
+mkdir -p $VENDOR_DIR/bin/
+cp ffmpeg $VENDOR_DIR/bin/
 make distclean
 hash -r
 ffmpeg 2>&1 | head -n1
