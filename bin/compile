@@ -5,8 +5,7 @@ indent() {
   sed 's/^/       /'
 }
 
-echo "-----> Starting buildpack"
-
+echo "-----> Just cloning github and using pre-compiled binary"
 mkdir -p "$1/vendor"
 PROFILE_PATH="$1/.profile.d/ffmpeg.sh"
 echo "exporting PATH and LIBRARY_PATH" | indent
@@ -17,77 +16,97 @@ export VENDOR_DIR=$1"/vendor"
 export PATH="$VENDOR_DIR/bin:$PATH"
 export CACHE_DIR=$2
 
-echo "-----> Creating sources dir"
-
-mkdir -p $VENDOR_DIR/ffmpeg_sources
-mkdir -p $VENDOR_DIR/ffmpeg_build
-cd $VENDOR_DIR/ffmpeg_sources
-
-echo "-----> Getting fdk-aac encoder"
-
-git clone --depth 1 git://github.com/mstorsjo/fdk-aac.git
-
-echo "-----> Installing fdk-aac encoder"
-
-cd fdk-aac
-autoreconf -fiv
-./configure --prefix="$VENDOR_DIR/ffmpeg_build" --disable-shared
-make
-make install
-make distclean
-
-# echo "-----> Getting newest yasm"
-
-# cd $VENDOR_DIR
-# wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
-# tar -xvf yasm-1.3.0.tar.gz
-
-# echo "-----> Configure Yasm"
-
-# cd yasm-1.3.0
-# ./configure --prefix="$VENDOR_DIR" --disable-debug >/dev/null 2>&1
-# make
-# make install >/dev/null 2>&1
-# make distclean > /dev/null 2>&1
-
-echo "-----> Getting lame"
-
-cd $VENDOR_DIR/ffmpeg_sources
-wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
-tar xzvf lame-3.99.5.tar.gz
-
-echo "-----> Installing lame"
-
-cd lame-3.99.5
-./configure --prefix="$VENDOR_DIR/ffmpeg_build" --enable-nasm --disable-shared
-make
-make install
-make distclean
-
-echo "-----> Getting ffmpeg"
-
-cd $VENDOR_DIR/ffmpeg_sources
-git clone --depth 1 git://source.ffmpeg.org/ffmpeg
-
-echo "-----> Installing ffmpeg"
-
-cd ffmpeg
-PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$VENDOR_DIR/ffmpeg_build/lib/pkgconfig"
-export PKG_CONFIG_PATH
-
-echo "-----> Configure ffmpeg"
-
-./configure --prefix="$VENDOR_DIR/ffmpeg_build" \
-  --extra-cflags="-I$VENDOR_DIR/ffmpeg_build/include" --extra-ldflags="-L$VENDOR_DIR/ffmpeg_build/lib" \
-  --bindir="$VENDOR_DIR/bin" --extra-libs="-ldl" --enable-gpl --enable-libass --enable-libfdk-aac --enable-libx264 \
-  --enable-libmp3lame --enable-nonfree
-make
-make install
-
-echo "-----> Copy binary"
 
 mkdir -p $VENDOR_DIR/bin/
-cp ffmpeg $VENDOR_DIR/bin/
-make distclean
-hash -r
-ffmpeg 2>&1 | head -n1
+cd $VENDOR_DIR
+git clone https://github.com/alligatortower/ffmpeg-fdkaac
+cd ffmpeg-fdkaac
+mv ffmpeg ../bin
+
+
+# echo "-----> Starting buildpack"
+
+# mkdir -p "$1/vendor"
+# PROFILE_PATH="$1/.profile.d/ffmpeg.sh"
+# echo "exporting PATH and LIBRARY_PATH" | indent
+# mkdir -p $(dirname $PROFILE_PATH)
+# echo 'export PATH="$PATH:$HOME/vendor/bin"' >> $PROFILE_PATH
+# echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/vendor/lib"' >> $PROFILE_PATH
+# export VENDOR_DIR=$1"/vendor"
+# export PATH="$VENDOR_DIR/bin:$PATH"
+# export CACHE_DIR=$2
+
+# echo "-----> Creating sources dir"
+
+# mkdir -p $VENDOR_DIR/ffmpeg_sources
+# mkdir -p $VENDOR_DIR/ffmpeg_build
+# cd $VENDOR_DIR/ffmpeg_sources
+
+# echo "-----> Getting fdk-aac encoder"
+
+# git clone --depth 1 git://github.com/mstorsjo/fdk-aac.git
+
+# echo "-----> Installing fdk-aac encoder"
+
+# cd fdk-aac
+# autoreconf -fiv
+# ./configure --prefix="$VENDOR_DIR/ffmpeg_build" --disable-shared
+# make
+# make install
+# make distclean
+
+# # echo "-----> Getting newest yasm"
+
+# # cd $VENDOR_DIR
+# # wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
+# # tar -xvf yasm-1.3.0.tar.gz
+
+# # echo "-----> Configure Yasm"
+
+# # cd yasm-1.3.0
+# # ./configure --prefix="$VENDOR_DIR" --disable-debug >/dev/null 2>&1
+# # make
+# # make install >/dev/null 2>&1
+# # make distclean > /dev/null 2>&1
+
+# echo "-----> Getting lame"
+
+# cd $VENDOR_DIR/ffmpeg_sources
+# wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
+# tar xzvf lame-3.99.5.tar.gz
+
+# echo "-----> Installing lame"
+
+# cd lame-3.99.5
+# ./configure --prefix="$VENDOR_DIR/ffmpeg_build" --enable-nasm --disable-shared
+# make
+# make install
+# make distclean
+
+# echo "-----> Getting ffmpeg"
+
+# cd $VENDOR_DIR/ffmpeg_sources
+# git clone --depth 1 git://source.ffmpeg.org/ffmpeg
+
+# echo "-----> Installing ffmpeg"
+
+# cd ffmpeg
+
+# export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$VENDOR_DIR/ffmpeg_build/lib/pkgconfig"
+
+# echo "-----> Configure ffmpeg"
+
+# ./configure --prefix="$VENDOR_DIR/ffmpeg_build" \
+#   --extra-cflags="-I$VENDOR_DIR/ffmpeg_build/include" --extra-ldflags="-L$VENDOR_DIR/ffmpeg_build/lib" \
+#   --bindir="$VENDOR_DIR/bin" --extra-libs="-ldl" --enable-gpl --enable-libass --enable-libfdk-aac --enable-libx264 \
+#   --enable-libmp3lame --enable-nonfree
+# make
+# make install
+
+# echo "-----> Copy binary"
+
+# mkdir -p $VENDOR_DIR/bin/
+# cp ffmpeg $VENDOR_DIR/bin/
+# make distclean
+# hash -r
+# ffmpeg 2>&1 | head -n1
